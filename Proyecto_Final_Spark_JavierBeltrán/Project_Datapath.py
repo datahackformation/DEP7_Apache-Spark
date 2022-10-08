@@ -124,7 +124,16 @@ df_join.groupBy("customer_id").agg(countDistinct('order_date')) \
 
 ## Solución 3
 from pyspark.sql.functions import min, max
-df_join.groupBy("customer_id").agg(min("order_date"),min("product_name")).show()
+from pyspark.sql import Row, functions as F
+from pyspark.sql.window import Window
+
+rowfilter =col("rowNum")==1
+datefilter = col("product_id")<=10
+df_join.filter(datefilter)\
+       .sort("customer_id","order_date")\
+       .select("customer_id","order_date","product_name",F.row_number().over(Window.partitionBy("customer_id").orderBy("order_date")).alias("rowNum"))\
+       .select("customer_id","order_date","product_name")\
+       .filter(rowfilter).show()
 
 # COMMAND ----------
 
@@ -228,7 +237,8 @@ from pyspark.sql.functions import count, max, col, sum, when
 
 df_join.withColumn("puntos",when( (col("product_name")=="sushi") & (col("order_date")<col("join_date")),col("price")*2*10)\
                   .when( (col("product_name")!="sushi") & (col("order_date")<col("join_date")),col("price")*10)\
-                  .when( col("order_date")>=col("join_date"),col("price")*2*10) )\
+                  .when( (col("order_date")>=col("join_date")),col("price")*2*10) )\
+                  .filter(col("order_date")<'2021-01-31')\
                   .groupBy("customer_id").agg(sum(col("puntos")))\
                   .show()
 
