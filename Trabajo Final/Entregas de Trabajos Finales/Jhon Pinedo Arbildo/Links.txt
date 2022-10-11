@@ -1,0 +1,3 @@
+Medium: https://medium.com/@jhonpinedo44/caso-pizzeria-danny-databricks-apache-spark-d663814b75df
+
+Video: https://youtu.be/31Havf9lzVU
